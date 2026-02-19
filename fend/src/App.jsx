@@ -13,10 +13,6 @@ import GenerateImages from './pages/GenerateImages'
 
 
 
-
-
-
-
 const App = () => {
   return (
     <div>
@@ -36,5 +32,7 @@ const App = () => {
     </div>
   )
 }
-
 export default App
+
+
+
