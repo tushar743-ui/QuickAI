@@ -1,5 +1,13 @@
 import { Hash, Sparkles } from 'lucide-react'
-import React, { useState } from 'react'
+import React, {  useState } from 'react'
+import { useAuth } from '@clerk/clerk-react'
+import axios from 'axios'
+import { toast } from 'react-hot-toast'
+
+import Markdown from 'react-markdown'
+
+axios.defaults.baseURL = import.meta.env.VITE_BASE_URL
+
 
 const BlogTitles = () => {
   const blogCategories=['General', 'Technology', 'Business', 'Health','Lifestyle', 'Education', 'Travel','Food' ]
@@ -7,9 +15,35 @@ const BlogTitles = () => {
 
 const [selectedCategory, setSelectedCategory]= useState('General')
 const [input , setInput] = useState('')
+
+const [loading, setLoading] = useState(false)
+const [content, setContent] = useState('')
+
+const {getToken} = useAuth()
+
+
 const onSubmitHandler=async (e)=>{
   e.preventDefault();
+  try {
+    setLoading(true);
+    const prompt =`Generate a catchy and engaging blog title about ${input} in the ${selectedCategory} category. The titles should be creative, attention-grabbing, and relevant to the topic. Please ensure that the titles are unique and not clickbait.`
+    const {data}= await axios.post('/api/ai/generate-blog-title',{prompt}, 
+      { headers:{Authorization: `Bearer ${await getToken()}`}})
+
+      if(data.success){
+        setContent(data.content)
+      }else{
+        toast.error(data.message)
+      }
+  } catch (error) {
+    toast.error(error.message)
+  }
+  setLoading(false)
 }
+
+
+
+
 
 
 
@@ -37,13 +71,15 @@ const onSubmitHandler=async (e)=>{
 
       <div className='mt-3 flex gap-3 flex-wrap sm:max w-9/11'>
         {blogCategories.map((item)=>(
-        <span onClick={()=>setSelectedCategory(item)}  className= {`text-xs px-4 py-1 border rounded-full cursor-pointer ${selectedCategory.text === item.text  ? 'bg-purple-50 text-purple-700' :'text-gray-500 border-gray-300' } `} key={item}>{item}</span>
+        <span onClick={()=>setSelectedCategory(item)}  className= {`text-xs px-4 py-1 border rounded-full cursor-pointer ${selectedCategory === item  ? 'bg-purple-50 text-purple-700' :'text-gray-500 border-gray-300' } `} key={item}>{item}</span>
       ))}
       </div>
     <br />
 
-    <button className='w-full flex justify-center items-center gap-2 bg-linear-to-r from-[#C341F6] to-[#8E37EB] text-white px-4 py-2 mt-6 text-sm rounded-lg cursor-pointer '>
-      <Hash className='w-5'/>
+    <button disabled={loading} className='w-full flex justify-center items-center gap-2 bg-linear-to-r from-[#C341F6] to-[#8E37EB] text-white px-4 py-2 mt-6 text-sm rounded-lg cursor-pointer '>
+      {loading? <span className='w-4 h-4 my-1 rounded-full border-2 norder-t-transparent animate-spin'></span>
+      :<Hash className='w-5'/>}
+      
       Generate title
     </button>
     </form>
@@ -58,7 +94,8 @@ const onSubmitHandler=async (e)=>{
       <Hash className='w-5 h-5 text-[#8E37EB]'/>
       <h1 className='text-xl font-semibold'>Generated titles</h1>
     </div>
-
+    {
+      !content ? (
      <div className='flex-1 flex justify-center items-center'>
       <div className='text-sm flex flex-col items-center gap-5 text-gray-400'>
 
@@ -66,6 +103,16 @@ const onSubmitHandler=async (e)=>{
         <p>Enter a topic and click "Generate title" to get started </p>
      </div>
   </div>
+
+      ): (
+        <div className='mt-3 h-full overflow-y-scroll text-sm text-slate-600'>
+                <div className='reset-tw'>
+                  <Markdown>{content}</Markdown>
+                </div>
+                </div>
+      )
+    }
+
   </div>
     </div>
   )
