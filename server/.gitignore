@@ -40,3 +40,7 @@ coverage
 # Nuxt.js build output
 .nuxt
 
+
+
+#upload folder
+uploads
