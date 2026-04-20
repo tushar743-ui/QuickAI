@@ -1,5 +1,5 @@
 import React from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import Layout from './pages/Layout'
 import Dashboard from './pages/Dashboard'
@@ -10,6 +10,7 @@ import RemoveObject from './pages/RemoveObject'
 import ReviewResume from './pages/ReviewResume'
 import Community from './pages/Community'
 import GenerateImages from './pages/GenerateImages'
+import CryptoVault from './pages/CryptoVault'
 import {Toaster} from 'react-hot-toast'
 
 
@@ -22,6 +23,8 @@ const App=()=>{
       <Toaster/>
       <Routes>
         <Route  path='/' element={<Home/>}  />
+        <Route path='/crypto-vault' element={<CryptoVault/>} />
+        <Route path='/ai/crypto-vault' element={<Navigate to='/crypto-vault' replace />} />
         <Route path='/ai' element={<Layout/>}>
         <Route index element={<Dashboard/>}/>
         <Route path='write-article' element={<WriteArticle/>}/>

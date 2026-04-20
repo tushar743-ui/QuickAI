@@ -5,7 +5,7 @@ import connectCloudinary from "../configs/cloudinary.js";
 import {v2 as cloudinary } from 'cloudinary';
 import axios from "axios";
 import fs from "fs";
-import { PDFParse } from "pdf-parse";
+import pdfParse from "pdf-parse";
 
 
 
@@ -207,43 +207,42 @@ export const removeImageObject = async (req, res) => {
 
 
 
+import pdfParse from "pdf-parse";  // fix the import at the top
+
 export const resumeReview = async (req, res) => {
     try {
         const { userId } = req.auth();
         const resume = req.file;
         const plan = req.plan;
-        
+
         if (!resume) {
             return res.json({ success: false, message: "Please upload a resume file" });
         }
 
-        if (plan !== 'premium' ) {
-            return res.json({ success: false, message: "THIS FEATURE IS ONLY AVAILABLE TO PREMIUM SUBSCTPTIONS." });
+        if (plan !== 'premium') {
+            return res.json({ success: false, message: "THIS FEATURE IS ONLY AVAILABLE TO PREMIUM SUBSCRIPTIONS." });
         }
 
+        if (resume.size > 5 * 1024 * 1024) {
+            return res.json({ success: false, message: "File size should be less than 5MB" });
+        }
 
-       if(resume.size>5*1024*1024){
-        return res.json({success:false, message:"File size should be less than 5MB"})
-       }
-       
-       const dataBuffer= fs.readFileSync(resume.path)
-       const pdfData= await new PDFParse({ data: dataBuffer }).getText()
+        // Use resume.buffer (requires multer memoryStorage)
+        const pdfData = await pdfParse(resume.buffer);
 
-       const prompt =`Review the following resume and provide feedback on how to improve it. Highlight any areas that could be enhanced, such as formatting, content, or structure. Resume:\n\n${pdfData.text}`
+        const prompt = `Review the following resume and provide feedback on how to improve it. Highlight any areas that could be enhanced, such as formatting, content, or structure. Resume:\n\n${pdfData.text}`;
 
-       const response = await AI.chat.completions.create({
+        const response = await AI.chat.completions.create({
             model: "llama-3.3-70b-versatile",
-            messages: [
-                { role: "user", content: prompt }
-            ],
+            messages: [{ role: "user", content: prompt }],
             max_tokens: 1000,
         });
 
         const content = response.choices[0].message.content;
 
-        await sql`INSERT INTO creations (user_id, prompt, content, type) VALUES (${userId}, 'Review the uploaded resume', ${content}, 'resume-review')`;
-// publish ==publish as I have written, in the sql query publish==publish , spell mistake , sorry!
-    
+        await sql`INSERT INTO creations (user_id, prompt, content, type) 
+                  VALUES (${userId}, 'Review the uploaded resume', ${content}, 'resume-review')`;
+
         res.json({ success: true, content });
 
     } catch (error) {
