@@ -5,7 +5,9 @@ import connectCloudinary from "../configs/cloudinary.js";
 import {v2 as cloudinary } from 'cloudinary';
 import axios from "axios";
 import fs from "fs";
-import pdfParse from "pdf-parse";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pdfParse = require("pdf-parse");
 
 
 
@@ -207,7 +209,7 @@ export const removeImageObject = async (req, res) => {
 
 
 
-import pdfParse from "pdf-parse";  // fix the import at the top
+
 
 export const resumeReview = async (req, res) => {
     try {
