@@ -112,7 +112,7 @@ const onSubmitHandler=async (e)=>{
      </div>
   </div>
   ) : (
-<img src={content} alt='image' className='mt-3 w-full h-full ' />
+<img loading="lazy" src={content} alt='image' className='mt-3 w-full h-full ' />
   )
 
 }

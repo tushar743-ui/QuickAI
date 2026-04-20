@@ -28,7 +28,7 @@ const Testimonials = () => {
                         {/* here  */}
                     <div className="flrx items-center gap-1">
 
-                        {Array(5).fill(0).map((_, index)=>(<img key={index} 
+                        {Array(5).fill(0).map((_, index)=>(<img loading="lazy" key={index} 
                         src={index < testimonial.rating ? assets.star_icon: assets.star_dull_icon } className="w-4 h-4" alt="star"/>) )} 
 
                     </div>
@@ -38,7 +38,7 @@ const Testimonials = () => {
 
 
                         <div className="flex items-center gap-3">
-                            <img className="w-12 h-12 rounded-full" src={testimonial.image} alt={testimonial.name} />
+                            <img loading="lazy" className="w-12 h-12 rounded-full" src={testimonial.image} alt={testimonial.name} />
                             <div>
                                 <p className="font-playfair text-xl">{testimonial.name}</p>
                                 <p className="text-gray-500">{testimonial.address}</p>

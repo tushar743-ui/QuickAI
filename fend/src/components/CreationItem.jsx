@@ -25,7 +25,7 @@ const CreationItem = ({item}) => {
             <div>
                 {item.type==='image' ?(
                     <div>
-                        <img src={item.content} alt="image" className='mt-3 w-full max-w-md' />
+                        <img loading="lazy" src={item.content} alt="image" className='mt-3 w-full max-w-md' />
                     </div>
                 ):(
                   <div className='mt-3 h-full overflow-scroll text-sm text-slate-700 '>
