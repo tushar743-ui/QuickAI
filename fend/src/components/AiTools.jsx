@@ -3,7 +3,7 @@ import { AiToolsData } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 
-const Aitools = () => {
+const AiTools = () => {
     const navigate =useNavigate()
     const {user} = useUser()
 
@@ -35,4 +35,4 @@ const Aitools = () => {
   )
 }
 
-export default Aitools
+export default AiTools
