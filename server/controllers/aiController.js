@@ -7,7 +7,7 @@ import axios from "axios";
 import fs from "fs";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
+import { extractText } from "unpdf";
 
 
 
@@ -211,6 +211,8 @@ export const removeImageObject = async (req, res) => {
 
 
 
+
+
 export const resumeReview = async (req, res) => {
     try {
         const { userId } = req.auth();
@@ -222,17 +224,17 @@ export const resumeReview = async (req, res) => {
         }
 
         if (plan !== 'premium') {
-            return res.json({ success: false, message: "THIS FEATURE IS ONLY AVAILABLE TO PREMIUM SUBSCRIPTIONS." });
+            return res.json({ success: false, message: "This feature is only available to premium subscriptions." });
         }
 
         if (resume.size > 5 * 1024 * 1024) {
             return res.json({ success: false, message: "File size should be less than 5MB" });
         }
 
-        // Use resume.buffer (requires multer memoryStorage)
-        const pdfData = await pdfParse(resume.buffer);
+        const buffer = new Uint8Array(resume.buffer);
+        const { text } = await extractText(buffer, { mergePages: true });
 
-        const prompt = `Review the following resume and provide feedback on how to improve it. Highlight any areas that could be enhanced, such as formatting, content, or structure. Resume:\n\n${pdfData.text}`;
+        const prompt = `Review the following resume and provide detailed feedback on how to improve it. Highlight areas that could be enhanced such as formatting, content, or structure.\n\nResume:\n\n${text}`;
 
         const response = await AI.chat.completions.create({
             model: "llama-3.3-70b-versatile",
