@@ -18,9 +18,9 @@ import fs from 'fs';
 const app =express()
 
 // Create uploads directory if it doesn't exist
-if (!fs.existsSync('uploads')) {
-    fs.mkdirSync('uploads', { recursive: true });
-}
+// if (!fs.existsSync('uploads')) {
+//     fs.mkdirSync('uploads', { recursive: true });
+// }
 
 await connectCloudinary();
 
