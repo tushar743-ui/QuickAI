@@ -19,12 +19,22 @@ const AI = new OpenAI({
     baseURL: "https://api.groq.com/openai/v1"
 });
 
+const getArticleTokenBudget = (requestedLength) => {
+    const safeLength = Number.isFinite(Number(requestedLength)) ? Number(requestedLength) : 800;
+
+    // Rough conversion: 1 token ~= 0.75 words. Add headroom and clamp.
+    const estimatedTokens = Math.ceil((safeLength / 0.75) * 1.2);
+    return Math.min(Math.max(estimatedTokens, 900), 3500);
+};
+
 export const generateArticle = async (req, res) => {
     try {
         const { userId } = req.auth();
         const { prompt, length } = req.body;
         const plan = req.plan;
         const free_usage = req.free_usage;
+        const requestedLength = Number(length) || 800;
+        const maxTokens = getArticleTokenBudget(requestedLength);
 
         if (plan !== 'premium' && free_usage >= 10) {
             return res.json({ success: false, message: "Limit reached. Upgrade to continue." });
@@ -33,9 +43,13 @@ export const generateArticle = async (req, res) => {
         const response = await AI.chat.completions.create({
             model: "llama-3.3-70b-versatile",
             messages: [
+                {
+                    role: "system",
+                    content: `Write complete, well-structured articles in markdown. Target around ${requestedLength} words and do not stop early unless you hit a hard token limit.`
+                },
                 { role: "user", content: prompt }
             ],
-            max_tokens: 100,
+            max_tokens: maxTokens,
         });
 
         const content = response.choices[0].message.content;
@@ -144,6 +158,10 @@ export const removeImageBackground = async (req, res) => {
         const { userId } = req.auth();
         const image = req.file;
         const plan = req.plan;
+
+        if (!image) {
+            return res.json({ success: false, message: "Please upload an image file" });
+        }
         
 
         if (plan !== 'premium' ) {
@@ -151,7 +169,9 @@ export const removeImageBackground = async (req, res) => {
         }
 
 
-       const {secure_url}=await cloudinary.uploader.upload(image.path,{
+       const imageDataUri = `data:${image.mimetype};base64,${image.buffer.toString('base64')}`
+
+       const {secure_url}=await cloudinary.uploader.upload(imageDataUri,{
         transformation:[
             {
                 effect:'background_removal',
@@ -181,6 +201,14 @@ export const removeImageObject = async (req, res) => {
         const { object } = req.body;
         const image = req.file;
         const plan = req.plan;
+
+        if (!image) {
+            return res.json({ success: false, message: "Please upload an image file" });
+        }
+
+        if (!object?.trim()) {
+            return res.json({ success: false, message: "Please provide an object name to remove" });
+        }
         
 
         if (plan !== 'premium' ) {
@@ -188,7 +216,9 @@ export const removeImageObject = async (req, res) => {
         }
 
 
-       const {public_id}=await cloudinary.uploader.upload(image.path)
+       const imageDataUri = `data:${image.mimetype};base64,${image.buffer.toString('base64')}`
+
+       const {public_id}=await cloudinary.uploader.upload(imageDataUri)
        const imageUrl =cloudinary.url(public_id,{
         transformation:[{effect:`gen_remove:${object}`}],
         resource_type:'image'
